@@ -84,7 +84,7 @@ public class BrowserView {
         enableButtons();
         // create scene to hold UI
         myScene = new Scene(root, DEFAULT_SIZE.width, DEFAULT_SIZE.height);
-        //myScene.getStylesheets().add(DEFAULT_RESOURCE_PACKAGE + STYLESHEET);
+        myScene.getStylesheets().add(DEFAULT_RESOURCE_PACKAGE + STYLESHEET);
     }
 
     /**
@@ -221,11 +221,30 @@ public class BrowserView {
     // make buttons for setting favorites/home URLs
     private Node makePreferencesPanel () {
         HBox result = new HBox();
+        myFavorites = new ComboBox<String>();
         result.getChildren().add(makeButton("SetHomeCommand", event -> {
             myModel.setHome();
             enableButtons();
         }));
+        result.getChildren().add(makeButton("FavoritePromptTitle", event -> {
+        	addFavorite();
+        }));
+        
+        result.getChildren().add(makeComboBox( event -> {
+        	myModel.go(myModel.getFavorite(myFavorites.getValue()).toString());
+        	showPage(myModel.getFavorite(myFavorites.getValue()).toString());
+        }));
+        
         return result;
+    }
+   
+    private ComboBox<String> makeComboBox(EventHandler<ActionEvent> handler) {
+        // represent all supported image suffixes
+       
+        myFavorites = new ComboBox<String>();
+        
+        myFavorites.setOnAction(handler);
+        return myFavorites;
     }
 
     // makes a button using either an image or a label
@@ -236,11 +255,15 @@ public class BrowserView {
 
         Button result = new Button();
         String label = myResources.getString(property);
-        if (label.matches(IMAGEFILE_SUFFIXES)) {
-            result.setGraphic(new ImageView(
-                new Image(getClass().getResourceAsStream(DEFAULT_RESOURCE_PACKAGE + label))));
-        } else {
-            result.setText(label);
+        try{
+        	if (label.matches(IMAGEFILE_SUFFIXES)) {
+        		result.setGraphic(new ImageView(
+        				new Image(getClass().getResourceAsStream(DEFAULT_RESOURCE_PACKAGE + label))));
+        	} else {
+        		result.setText(label);
+        	}
+        }catch(BrowserException e){
+        	
         }
         result.setOnAction(handler);
         return result;
